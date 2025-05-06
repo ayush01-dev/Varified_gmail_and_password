@@ -1,18 +1,17 @@
 from flask import Flask, render_template, request, redirect, session
-import time, json
+import time, sqlite3
 from otp import generate_otp, send_otp
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-DB_FILE = 'users.json'
+DB_PATH = "/data/users.db"  # ✅ Path to SQLite DB on Render Disk
 
-# Load users
-try:
-    with open(DB_FILE, 'r') as f:
-        users = json.load(f)
-except:
-    users = {}
+# 🔧 Helper to connect to the DB
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 @app.route("/", methods=["GET", "POST"])
 def register():
@@ -22,9 +21,17 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
 
-        if email in users:
+        # 🔍 Check if email already exists
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
             return "⚠️ This Gmail is already registered!"
 
+        # ✅ Generate OTP and send email
         otp, timestamp = generate_otp()
         send_otp(email, otp)
 
@@ -50,15 +57,17 @@ def verify():
         if time.time() - sent_time > 120:
             return "⏰ OTP expired. Go back and try again."
         elif user_otp == sent_otp:
-            email = session["email"]
-            users[email] = {
-                "name": session["name"],
-                "age": session["age"],
-                "password": session["password"]
-            }
-            with open(DB_FILE, "w") as f:
-                json.dump(users, f, indent=4)
-            send_success_email(email, session["name"])
+            # ✅ Save verified user to DB
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO users (name, age, email, password) VALUES (?, ?, ?, ?)",
+                (session["name"], session["age"], session["email"], session["password"])
+            )
+            conn.commit()
+            conn.close()
+
+            send_success_email(session["email"], session["name"])
             return "✅ Registered successfully !"
         else:
             return "❌ Incorrect OTP!"
