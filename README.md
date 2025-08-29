@@ -35,9 +35,6 @@
 4. **Access the app:**
    Open your browser and go to `http://localhost:5000`
 
-## Screenshots
-![Register Page](templates/register.html)
-![Verify Page](templates/verify.html)
 
 ## Technologies Used
 - Python
