@@ -1,4 +1,8 @@
+
 # Gmail & Password Verification System
+
+## Description
+This repository contains a web-based application for secure user registration and email verification using Gmail and OTP (One-Time Password). Users register with their Gmail address and password, receive an OTP via email, and verify their account to complete registration. User data is managed in a JSON file for simplicity and transparency.
 
 This project is a simple web-based system for registering users with Gmail addresses and verifying them using OTP (One-Time Password). It is built with Python and uses basic HTML templates for the frontend.
 
@@ -41,7 +45,9 @@ This project is a simple web-based system for registering users with Gmail addre
 4. **Access the app:**
    Open your browser and go to `http://localhost:5000`
 
-
+## Screenshots
+![Register Page](templates/register.html)
+![Verify Page](templates/verify.html)
 
 ## Technologies Used
 - Python
